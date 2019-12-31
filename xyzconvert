@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+import re, os
+
+print(os.listdir("/mnt/c/Users/asygo/Desktop/xyz/gcode"))
+file = input("Input filename without space in xyz/gcode folder:")
+original_gcode_dir = "/mnt/c/Users/asygo/Desktop/xyz/gcode/" + file + ".gcode"
+xyz_dir = "/mnt/c/Users/asygo/Desktop/xyz/gcode/xyz_script"
+temp_dir = "/mnt/c/Users/asygo/Desktop/xyz/gcode/temp.gcode"
+
+fin = open(original_gcode_dir, "r")
+lines = fin.readlines()
+num_lines = sum(1 for line in lines)
+length = re.findall("\d+\.\d+", lines[num_lines-4])
+
+xyz = open(xyz_dir, "r")
+header = xyz.readlines()
+header[0] = "; filename = " + file + ".3w\n"
+header[6] = "; total_filament = " + str(length[0]) + "\n"
+header[11] = "; extruder_filament = " + str(length[0])+ ":0.00\n"
+fout = open(temp_dir, "w+")
+converted = ''.join(header[:56])
+converted += ''.join(lines[204:num_lines-10])
+converted +="M107\nM84"
+fout.write(converted)
+
+fin.close()
+fout.close()
+os.remove(original_gcode_dir)
+os.rename(temp_dir, original_gcode_dir)
+print("finished")
